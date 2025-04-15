@@ -146,13 +146,13 @@ def pEF1_fPO_three_agent_chore_allocation(m, N, D):
     return X
 
 
-def pEF1_fPO_ILP_chore_allocation(m,n,D):
+def pEF1_fPO_ILP_chore_allocation(m, n, D):
 
     ##### Define ILP model
     model = Model("ILP")
     ## Define variables
     # Main variable: allocation X
-    x = {}  
+    x = {}
     for i in range(n):
         for j in range(m):
             x[i, j] = model.addVar(vtype=GRB.BINARY, name=f"x_{i}_{j}")
@@ -161,10 +161,12 @@ def pEF1_fPO_ILP_chore_allocation(m,n,D):
     epsilon = 1e-6
     w = {}
     for i in range(n):
-        w[i] = model.addVar(lb=epsilon, ub=1 - epsilon, vtype=GRB.CONTINUOUS, name=f"w_{i}")
+        w[i] = model.addVar(
+            lb=epsilon, ub=1 - epsilon, vtype=GRB.CONTINUOUS, name=f"w_{i}"
+        )
 
     # Aux variable: guessing chore to remove from bundle for EF-1 constaints
-    z = {} 
+    z = {}
     for i in range(n):
         for k in range(n):
             if i == k:
@@ -182,22 +184,22 @@ def pEF1_fPO_ILP_chore_allocation(m,n,D):
     # Constraint 2: auxiliary weights need to add up to 1
     model.addConstr(quicksum(w[i] for i in range(n)) == 1)
 
-
-
     for i in range(n):
         for k in range(n):
             if i == k:
                 continue
-            #Constraint 4, 5 and 6: Allocation must be EF-1
+            # Constraint 4, 5 and 6: Allocation must be EF-1
             model.addConstr(quicksum(z[i, k, j] for j in range(m)) <= 1)
-            model.addConstr(quicksum(D[j][i]*(x[i,j]-z[i, k, j]) for j in range(m)) <= quicksum(D[j][k]*x[k,j] for j in range(m)))
+            model.addConstr(
+                quicksum(D[j][i] * (x[i, j] - z[i, k, j]) for j in range(m))
+                <= quicksum(D[j][k] * x[k, j] for j in range(m))
+            )
 
             for j in range(m):
-                model.addConstr(z[i, k, j] <= x[i,j])
+                model.addConstr(z[i, k, j] <= x[i, j])
 
                 # Constraint 3: allocation must be fPO
-                model.addConstr( (x[i, j]==1) >> (w[i] * D[j][i] <= w[k] * D[j][k]) )
-
+                model.addConstr((x[i, j] == 1) >> (w[i] * D[j][i] <= w[k] * D[j][k]))
 
     # model.setObjective(quicksum(x[i,j] for i in range(n)), GRB.MINIMIZE) #define objective here
     model.optimize()
