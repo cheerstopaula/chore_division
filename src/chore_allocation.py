@@ -205,4 +205,21 @@ def pEF1_fPO_ILP_chore_allocation(m, n, D):
     model.optimize()
 
     X = np.array([[x[i, j].X for i in range(n)] for j in range(m)])
+
     return np.round(X).astype(int)
+
+
+def EF1(X, D):
+    m, n = X.shape
+    D = np.array(D)
+    V = X.T @ D
+
+    for i in range(n):
+        max_removal = max([D[j, i] for j in range(m) if X[j, i] == 1])
+        for k in range(n):
+            if i == k:
+                continue
+            if V[i, i] - max_removal > V[k, i]:
+                return False
+
+    return True
