@@ -30,5 +30,3 @@ X = pEF1_fPO_ILP_chore_allocation(m, n, D)
 print(X)
 print(EF1(X, D))
 print(EF_violations(X, D))
-
-

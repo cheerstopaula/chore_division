@@ -224,17 +224,18 @@ def EF1(X, D):
 
     return True
 
-def EF_violations(X,D): 
+
+def EF_violations(X, D):
     m, n = X.shape
     D = np.array(D)
     V = X.T @ D
 
-    envy_count=0
+    envy_count = 0
     for i in range(n):
         for k in range(n):
             if i == k:
                 continue
             if V[i, i] > V[k, i]:
-                envy_count+=1
+                envy_count += 1
 
     return envy_count
