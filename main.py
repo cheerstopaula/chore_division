@@ -33,7 +33,6 @@ D = np.random.randint(1, 6, size=(m, n)).astype(float)
 X = pEF1_fPO_ILP_chore_allocation(m, n, D)
 
 print(X)
-print("Allocation is fPO:",fPO(X,D))
+print("Allocation is fPO:", fPO(X, D))
 print("Allocation is EF1:", EF1(X, D))
 print("Envy violation:", EF_violations(X, D))
-
