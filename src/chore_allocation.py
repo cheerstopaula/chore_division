@@ -239,3 +239,42 @@ def EF_violations(X, D):
                 envy_count += 1
 
     return envy_count
+
+
+def fPO(X,D):
+
+    m, n = X.shape
+    
+    model = Model("simple_lp")
+
+    # Define alternative fractional allocation
+    Y = {}
+    for i in range(n):
+        for j in range(m):
+            Y[j, i] = model.addVar(lb=0.0,vtype=GRB.CONTINUOUS, name=f"Y_{i}_{j}")
+    # Allocation must be complete
+    for j in range(m):
+        model.addConstr(quicksum(Y[j, i] for i in range(n)) == 1)
+
+    # Allocation must have everyone at least as happy
+    usw=0
+    for i in range(n):
+        u_i = quicksum(X[j, i] * D[j, i] for j in range(m))
+        model.addConstr(u_i >= quicksum(Y[j, i] * D[j, i] for j in range(m)), name=f"row_constraint_{i}")
+        usw+=u_i
+
+    # Allocation must be slightly better in the usw sense
+    epsilon = 1e-5
+    rhs_total = quicksum(Y[j, i] * D[j, i] for j in range(m) for i in range(n)) + epsilon
+    model.addConstr(usw >= rhs_total, name="global_constraint")
+
+    # Solve LP
+    model.setObjective(0, GRB.MINIMIZE)
+    model.optimize()
+
+    # Print solution
+    if model.status == GRB.OPTIMAL:
+        Y_sol = np.array([[Y[i, j].X for j in range(n)] for i in range(m)])
+        return False
+    
+    return True
